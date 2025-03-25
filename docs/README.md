@@ -13,5 +13,5 @@ docker compose up
 -   for runnig tests:
 
 ```shell
-docker compose run node npm test
+docker compose run --rm node npm test
 ```
