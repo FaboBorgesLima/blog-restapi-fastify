@@ -1,7 +1,9 @@
 import { DataSource } from "typeorm";
 import { config } from "./config";
+import { UserCreate1742940238325 } from "./migrations/1742940238325-UserCreate";
+import { User } from "./entities/User";
 
-export const PostgresDataSource = new DataSource({
+export default new DataSource({
     type: "postgres",
     host: config.POSTGRES_HOST,
     port: config.POSTGRES_PORT,
@@ -9,8 +11,8 @@ export const PostgresDataSource = new DataSource({
     password: config.POSTGRES_PASSWORD,
     database: config.POSTGRES_DB,
     synchronize: true,
-    logging: true,
-    entities: [],
+    logging: false,
+    entities: [User],
     subscribers: [],
-    migrations: [],
+    migrations: [UserCreate1742940238325],
 });

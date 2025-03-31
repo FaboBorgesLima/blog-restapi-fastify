@@ -10,6 +10,12 @@
 docker compose up
 ```
 
+-   running migrations:
+
+```shell
+docker compose run --rm node npm run typeorm migration:run -- -d src/dataSource.ts
+```
+
 -   for runnig tests:
 
 ```shell

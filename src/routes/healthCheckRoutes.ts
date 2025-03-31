@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 
-export async function healthCheckRoute(
+export async function healthCheckRoutes(
     fastify: FastifyInstance,
     options: {}
 ): Promise<void> {

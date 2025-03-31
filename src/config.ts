@@ -7,6 +7,7 @@ interface Config {
     POSTGRES_USER: string;
     POSTGRES_DB: string;
     PORT: number;
+    KEY: string;
 }
 
 function getConfig(): Config {
@@ -19,5 +20,6 @@ function getConfig(): Config {
         POSTGRES_USER: process.env.POSTGRES_USER ?? "",
         POSTGRES_DB: process.env.POSTGRES_DB ?? "",
         PORT: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+        KEY: process.env.KEY ?? "",
     };
 }

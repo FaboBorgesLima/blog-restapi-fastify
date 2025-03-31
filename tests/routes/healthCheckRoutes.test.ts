@@ -1,11 +1,11 @@
 import test from "node:test";
-import { healthCheckRoute } from "../../src/routes/healthCheckRoute";
+import { healthCheckRoutes } from "../../src/routes/healthCheckRoutes";
 import fastify from "fastify";
 
-test("healthCheckRoute", async (t) => {
+test("healthCheckRoutes", async (t) => {
     const instance = fastify();
 
-    instance.register(healthCheckRoute);
+    instance.register(healthCheckRoutes);
 
     const res = await instance.inject({ method: "GET", path: "/health-check" });
 
