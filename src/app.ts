@@ -4,7 +4,7 @@ import { userRoutes } from "./routes/userRoutes";
 import { dataSourcePlugin } from "./plugins/dataSourcePlugin";
 
 export function app(): FastifyInstance {
-    const server = fastify({ logger: true });
+    const server = fastify();
 
     server.register(dataSourcePlugin);
 
