@@ -30,7 +30,8 @@ The Users API allows you to manage user accounts, including creating, retrieving
 {
     "id": "string",
     "name": "string",
-    "email": "string"
+    "email": "string",
+    "token": "string"
 }
 ```
 
@@ -114,8 +115,7 @@ Authorization: Bearer <token>
 
 ```json
 {
-    "name": "string",
-    "email": "string"
+    "password": "string"
 }
 ```
 
@@ -125,9 +125,7 @@ Authorization: Bearer <token>
 
 ```json
 {
-    "id": "string",
-    "name": "string",
-    "email": "string"
+    "token": "string"
 }
 ```
 
