@@ -1,6 +1,4 @@
 import { FastifyInstance } from "fastify";
-import dataSource from "../dataSource";
-import { User } from "../entities/User";
 import {
     IndexUserSchema,
     IndexUserSchemaType,
@@ -23,10 +21,13 @@ import {
     UpdateUserSchema,
     UpdateUserSchemaType,
 } from "../Schemas/User/UpdateUserSchema";
+import { UserRepository } from "../repositories/UserRepository";
+import { UserSerializer } from "../serializers/UserSerializer";
+import { HashService } from "../services/HashService";
+import { AuthenticationService } from "../services/AuthenticationService";
 
 export async function userRoutes(fastify: FastifyInstance): Promise<void> {
-    const userRepository = dataSource.getRepository(User);
-
+    const authenticationService = new AuthenticationService(UserRepository);
     fastify.post<{
         Body: CreateUserSchemaType;
         200: UserSchemaType;
@@ -41,9 +42,9 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
             },
         },
         async (req) =>
-            (
-                await userRepository.save(userRepository.create(req.body))
-            ).toJSON()
+            UserSerializer.toJSON(
+                await UserRepository.save(UserRepository.create(req.body))
+            )
     );
 
     fastify.get<{
@@ -67,11 +68,11 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
         },
         async (req) => ({
             users: (
-                await userRepository.find({
+                await UserRepository.find({
                     skip: req.query.page * req.query.size,
                     take: req.query.size,
                 })
-            ).map((user) => user.toPublicJSON()),
+            ).map((user) => UserSerializer.toPublicJSON(user)),
         })
     );
 
@@ -79,13 +80,17 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
         "/users/:id",
         { schema: { params: ShowUserSchema } },
         async (req) => ({
-            user: await userRepository.findOneByOrFail({
+            user: await UserRepository.findOneByOrFail({
                 id: req.params.id.toString(),
             }),
         })
     );
 
-    fastify.put<{ Params: { id: string }; Body: UpdateUserSchemaType }>(
+    fastify.put<{
+        Params: { id: string };
+        Body: UpdateUserSchemaType;
+        Headers: { authorization: string };
+    }>(
         "/users/:id",
         {
             schema: {
@@ -93,19 +98,67 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
                     id: Type.String(),
                 }),
                 body: UpdateUserSchema,
+                headers: Type.Object({
+                    authorization: Type.String(),
+                }),
+                response: {
+                    200: Type.Object({
+                        user: UserSchema,
+                    }),
+                },
             },
         },
-        async (req) =>
-            await userRepository.update({ id: req.params.id }, req.body)
+        async (req, reply) => {
+            const [user, requestUser] = await Promise.all([
+                UserRepository.findOneByOrFail({
+                    id: req.params.id,
+                }),
+                authenticationService.getTokenUser(req.headers.authorization),
+            ]);
+
+            if (!requestUser.canUpdate(user))
+                return reply.status(403).send({
+                    message: "You are not allowed to update this user",
+                });
+
+            user.password = HashService.make(req.body.password);
+            user.generateRandomToken();
+
+            await UserRepository.save(user);
+
+            return {
+                user: UserSerializer.toJSON(user),
+            };
+        }
     );
 
-    fastify.delete<{ Params: { id: string } }>(
+    fastify.delete<{
+        Params: { id: string };
+        Headers: { authorization: string };
+    }>(
         "/users/:id",
         {
             schema: {
                 params: Type.Object({ id: Type.String() }),
+                headers: Type.Object({
+                    authorization: Type.String(),
+                }),
             },
         },
-        async (req) => await userRepository.delete(req.params.id)
+        async (req, reply) => {
+            const [requestUser, user] = await Promise.all([
+                authenticationService.getTokenUser(req.headers.authorization),
+                UserRepository.findOneByOrFail({
+                    id: req.params.id,
+                }),
+            ]);
+
+            if (!requestUser.canUpdate(user))
+                return reply.status(403).send({
+                    message: "You are not allowed to delete this user",
+                });
+
+            await UserRepository.delete(req.params.id);
+        }
     );
 }

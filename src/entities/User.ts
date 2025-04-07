@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { RandomTokenService } from "../services/RandomTokenService";
 import { PublicUserSchemaType } from "../Schemas/User/SerializedUserSchema";
 import { UserSchemaType } from "../Schemas/User/UserSchema";
@@ -21,9 +21,7 @@ export class User {
     public token!: string;
 
     public constructor() {
-        if (!this.id) {
-            this.generateRandomToken();
-        }
+        if (!this.id) this.generateRandomToken();
     }
 
     public generateRandomToken(): string {
@@ -32,27 +30,11 @@ export class User {
         return this.token;
     }
 
-    public toPublicJSON(): PublicUserSchemaType {
-        if (!this.id) {
-            throw Error("needs id");
-        }
-
-        return {
-            id: this.id,
-            name: this.name,
-            email: this.email,
-        };
+    public canDelete(user: User): boolean {
+        return this.token == user.token;
     }
-    public toJSON(): UserSchemaType {
-        if (!this.id) {
-            throw Error("needs id");
-        }
 
-        return {
-            email: this.email,
-            id: this.id,
-            name: this.name,
-            token: this.token,
-        };
+    public canUpdate(user: User): boolean {
+        return this.token == user.token;
     }
 }

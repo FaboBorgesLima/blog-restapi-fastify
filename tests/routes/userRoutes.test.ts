@@ -11,6 +11,7 @@ import { HashService } from "../../src/services/HashService";
 
 describe("userRoutes", () => {
     let instance!: FastifyInstance;
+
     beforeEach(async () => {
         instance = fastify();
         instance.register(dataSourcePlugin);
@@ -85,6 +86,9 @@ describe("userRoutes", () => {
             .put(`/users/${user.id}`)
             .body({
                 password: HashService.make("otherpwd"),
+            })
+            .headers({
+                authorization: `Bearer ${user.token}`,
             });
 
         assert.equal(res.statusCode, 200);
@@ -105,7 +109,21 @@ describe("userRoutes", () => {
 
         user = await repo.save(user);
 
-        let res = await instance.inject().delete(`/users/${user.id}`);
+        let res = await instance
+            .inject()
+            .delete(`/users/${user.id}`)
+            .headers({
+                authorization: `Bearer ${RandomTokenService.make()}`,
+            });
+
+        assert.equal(res.statusCode, 500);
+
+        res = await instance
+            .inject()
+            .delete(`/users/${user.id}`)
+            .headers({
+                authorization: `Bearer ${user.token}`,
+            });
 
         assert.equal(res.statusCode, 200);
     });
