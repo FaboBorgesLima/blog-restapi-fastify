@@ -69,6 +69,10 @@ describe("userRoutes", () => {
 
         assert.equal(res.statusCode, 200);
         assert.equal(res.json().user.name, userSchema.name);
+        assert.equal(res.json().user.email, userSchema.email);
+        assert.equal(res.json().user.id, userSchema.id);
+        assert.equal(res.json().user.password, undefined);
+        assert.equal(res.json().user.token, undefined);
     });
 
     it("update", async () => {
