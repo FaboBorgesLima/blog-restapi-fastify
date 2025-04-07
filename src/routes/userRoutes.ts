@@ -80,9 +80,11 @@ export async function userRoutes(fastify: FastifyInstance): Promise<void> {
         "/users/:id",
         { schema: { params: ShowUserSchema } },
         async (req) => ({
-            user: await UserRepository.findOneByOrFail({
-                id: req.params.id.toString(),
-            }),
+            user: UserSerializer.toPublicJSON(
+                await UserRepository.findOneByOrFail({
+                    id: req.params.id.toString(),
+                })
+            ),
         })
     );
 
