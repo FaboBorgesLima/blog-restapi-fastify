@@ -1,7 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { RandomTokenService } from "../services/RandomTokenService";
-import { PublicUserSchemaType } from "../Schemas/User/SerializedUserSchema";
-import { UserSchemaType } from "../Schemas/User/UserSchema";
 
 @Entity()
 export class User {

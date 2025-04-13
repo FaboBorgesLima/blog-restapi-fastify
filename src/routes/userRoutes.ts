@@ -28,6 +28,7 @@ import { AuthenticationService } from "../services/AuthenticationService";
 
 export async function userRoutes(fastify: FastifyInstance): Promise<void> {
     const authenticationService = new AuthenticationService(UserRepository);
+
     fastify.post<{
         Body: CreateUserSchemaType;
         200: UserSchemaType;
