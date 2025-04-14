@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RandomTokenService } from "../services/RandomTokenService";
 import { PostCategory } from "./PostCategory";
+import { HashService } from "../services/HashService";
 
 @Entity({ name: "user" })
 export class User {
@@ -22,7 +23,18 @@ export class User {
     @OneToMany(() => PostCategory, (postCategory) => postCategory.user)
     public postCategories!: PostCategory[];
 
-    public constructor() {
+    public constructor(params?: Partial<User>) {
+        if (params) {
+            this.name = params.name || "";
+            this.email = params.email || "";
+            const password = params.password || "";
+            this.password = password;
+
+            if (password.length != 43) {
+                this.password = HashService.make(password);
+            }
+        }
+
         if (!this.id) this.generateRandomToken();
     }
 

@@ -25,9 +25,13 @@ import { UserRepository } from "../repositories/UserRepository";
 import { UserSerializer } from "../serializers/UserSerializer";
 import { HashService } from "../services/HashService";
 import { AuthenticationService } from "../services/AuthenticationService";
+import { dataSourcePlugin } from "../plugins/dataSourcePlugin";
 
 export async function userRoutes(fastify: FastifyInstance): Promise<void> {
     const authenticationService = new AuthenticationService(UserRepository);
+
+    // Register the data source plugin
+    fastify.register(dataSourcePlugin);
 
     fastify.post<{
         Body: CreateUserSchemaType;

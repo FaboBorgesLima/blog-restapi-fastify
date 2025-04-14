@@ -3,11 +3,16 @@ import { Type, Static } from "@sinclair/typebox";
 import { AuthenticationService } from "../services/AuthenticationService";
 import { UserRepository } from "../repositories/UserRepository";
 import { HashService } from "../services/HashService";
+import { dataSourcePlugin } from "../plugins/dataSourcePlugin";
 
-async function authenticationRoutes(
+export async function authenticationRoutes(
     fastify: FastifyInstance,
     options: FastifyPluginOptions
 ) {
+    // Register the data source plugin
+    fastify.register(dataSourcePlugin);
+
+    // Authentication service instance
     const authenticationService = new AuthenticationService(UserRepository);
 
     // Schema for login route
@@ -26,7 +31,7 @@ async function authenticationRoutes(
 
     // Schema for logout route
     const LogoutSchema = Type.Object({
-        auhthentication: Type.String(),
+        authentication: Type.String(),
     });
 
     const LogoutResponseSchema = Type.Object({
@@ -74,7 +79,6 @@ async function authenticationRoutes(
         "/logout",
         {
             schema: {
-                body: LogoutSchema,
                 response: {
                     200: LogoutResponseSchema,
                     400: LogoutErrorResponseSchema,
@@ -82,22 +86,60 @@ async function authenticationRoutes(
             },
         },
         async (request, reply) => {
-            const { auhthentication } = request.headers as Static<
+            const { authentication } = request.headers as Static<
                 typeof LogoutSchema
             >;
 
             try {
                 const user = await authenticationService.getTokenUser(
-                    auhthentication
+                    authentication
                 );
 
                 user.generateRandomToken();
 
-                UserRepository.save(user);
+                await UserRepository.save(user);
 
                 return reply.send({ message: "User logged out successfully" });
-            } catch (error) {
+            } catch (error: any) {
+                console.debug(error);
                 return reply.status(400).send({ error: "Logout failed" });
+            }
+        }
+    );
+
+    // Route for token validation
+    fastify.get<{
+        Headers: {
+            authentication: string;
+        };
+        Response: {
+            valid: boolean;
+        };
+    }>(
+        "/check-token",
+        {
+            schema: {
+                headers: Type.Object({
+                    authentication: Type.String(),
+                }),
+                response: {
+                    200: Type.Object({
+                        valid: Type.Boolean(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { authentication } = request.headers;
+
+            try {
+                const user = await authenticationService.getTokenUser(
+                    authentication
+                );
+
+                return reply.send({ valid: !!user });
+            } catch (error) {
+                return reply.status(400).send({ valid: false });
             }
         }
     );

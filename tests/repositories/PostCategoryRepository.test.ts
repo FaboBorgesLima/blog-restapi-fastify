@@ -97,8 +97,6 @@ describe("PostCategoryRepository", () => {
 
         const categories = await PostCategoryRepository.find();
 
-        console.debug("Categories retrieved from the database:", categories);
-
         assert.equal(categories.length, 2);
         assert.deepEqual(categories.map((c) => c.name).sort(), [
             "Food",
