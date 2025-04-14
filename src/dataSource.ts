@@ -2,6 +2,8 @@ import { DataSource } from "typeorm";
 import { config } from "./config";
 import { UserCreate1742940238325 } from "./migrations/1742940238325-UserCreate";
 import { User } from "./entities/User";
+import { PostCategoryCreate1744519537468 } from "./migrations/1744519537468-PostCategoryCreate";
+import { PostCategory } from "./entities/PostCategory";
 
 export default new DataSource({
     type: "postgres",
@@ -12,7 +14,7 @@ export default new DataSource({
     database: config.POSTGRES_DB,
     synchronize: true,
     logging: false,
-    entities: [User],
+    entities: [User, PostCategory],
     subscribers: [],
-    migrations: [UserCreate1742940238325],
+    migrations: [UserCreate1742940238325, PostCategoryCreate1744519537468],
 });

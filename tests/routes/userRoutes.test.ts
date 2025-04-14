@@ -1,5 +1,5 @@
 import fastify, { FastifyInstance } from "fastify";
-import { beforeEach, describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { dataSourcePlugin } from "../../src/plugins/dataSourcePlugin";
 import { userRoutes } from "../../src/routes/userRoutes";
 import assert from "node:assert";
@@ -8,6 +8,7 @@ import { UserSchemaType } from "../../src/Schemas/User/UserSchema";
 import dataSource from "../../src/dataSource";
 import { User } from "../../src/entities/User";
 import { HashService } from "../../src/services/HashService";
+import { UserRepository } from "../../src/repositories/UserRepository";
 
 describe("userRoutes", () => {
     let instance!: FastifyInstance;
@@ -16,6 +17,10 @@ describe("userRoutes", () => {
         instance = fastify();
         instance.register(dataSourcePlugin);
         instance.register(userRoutes);
+    });
+
+    afterEach(async () => {
+        await UserRepository.delete({});
     });
 
     it("create", async () => {
@@ -55,7 +60,7 @@ describe("userRoutes", () => {
         let res = await instance
             .inject()
             .get("/users")
-            .query({ size: "10", page: "1" });
+            .query({ size: "10", page: "0" });
 
         assert.equal(res.statusCode, 200);
 
